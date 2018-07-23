@@ -7,7 +7,7 @@ setup_requires = ['pytest-runner'] if 'test' in sys.argv else []
 
 setuptools.setup(
     name='cloneholio',
-    version='0.1.1',
+    version='0.2.0',
     description='I am cloneholio! I need syncing of my repos.',
     license='MIT',
     author='Andrew Rabert',
