@@ -2,12 +2,16 @@ import argparse
 import itertools
 import logging
 import pathlib
+import urllib.parse
+import urllib3
 
 import consumers
 import git
 import github
 import gitlab
 
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 GITLAB_URL = 'https://gitlab.com'
 
@@ -53,8 +57,12 @@ def get_gitlab_projects(path, api):
         yield from group.projects.list(all_available=True, as_list=False)
 
 
-def get_gitlab_repos(path, token):
-    api = gitlab.Gitlab(GITLAB_URL, private_token=token)
+def get_gitlab_repos(path, token, ssl_verify, base_url=None):
+    api = gitlab.Gitlab(
+        base_url or GITLAB_URL,
+        private_token=token,
+        ssl_verify=ssl_verify
+    )
 
     for project in get_gitlab_projects(path, api):
         project_path = project.path_with_namespace
@@ -63,8 +71,19 @@ def get_gitlab_repos(path, token):
             yield project_path, project.ssh_url_to_repo
 
 
-def get_github_repos(path, token):
-    api = github.Github(token)
+def get_github_repos(path, token, ssl_verify, base_url=None):
+    api = github.Github(
+        token,
+        base_url=base_url,
+        verify=ssl_verify
+    )
+    if base_url is not None:
+        # Don't ever fucking do this
+        # Fixes bug in upstream PyGithub
+        api._Github__requester._Requester__makeAbsoluteUrl = \
+            _make_github_absolute_url.__get__(
+                api._Github__requester, github.Requester.Requester
+            )
 
     repos = []
     if '/' in path:
@@ -76,6 +95,17 @@ def get_github_repos(path, token):
 
     for repo in repos:
         yield repo.full_name, repo.ssh_url
+
+
+def _make_github_absolute_url(self, url):
+    if url.startswith("/"):
+        url = self._Requester__prefix + url
+    else:
+        o = urllib.parse.urlparse(url)
+        url = o.path
+        if o.query != "":
+            url += "?" + o.query
+    return url
 
 
 def download_repos(repos, directory):
@@ -136,6 +166,13 @@ Token creation:
     parser.add_argument('-d', '--directory', default='.')
     parser.add_argument('-t', '--token', required=True)
     parser.add_argument('-p', '--provider', choices=PROVIDER_FUNCTIONS.keys())
+    parser.add_argument(
+        '-s', '--no-ssl-verify',
+        action='store_const',
+        const=False,
+        default=True
+    )
+    parser.add_argument('-u', '--base-url')
     parser.add_argument('paths', nargs='+')
     args = parser.parse_args()
 
@@ -145,7 +182,9 @@ Token creation:
                  args.provider, directory)
 
     repos = itertools.chain(*[
-        PROVIDER_FUNCTIONS[args.provider](path, args.token)
+        PROVIDER_FUNCTIONS[args.provider](
+            path, args.token, args.no_ssl_verify, args.base_url
+        )
         for path in args.paths
     ])
 
