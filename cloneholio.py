@@ -168,10 +168,11 @@ Token creation:
     parser.add_argument('-t', '--token', required=True)
     parser.add_argument('-p', '--provider', choices=PROVIDER_FUNCTIONS.keys())
     parser.add_argument(
-        '-s', '--no-ssl-verify',
+        '--insecure',
         action='store_const',
         const=False,
-        default=True
+        default=True,
+        help='Ignore SSL errors'
     )
     parser.add_argument('-u', '--base-url')
     parser.add_argument('paths', nargs='+')

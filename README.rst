@@ -44,7 +44,7 @@ Help
 
     $ cloneholio -h
     usage: cloneholio [-h] [-n NUM_PROCESSES] [-d DIRECTORY] -t TOKEN
-                      [-p {github,gitlab}] [-s] [-u BASE_URL]
+                      [-p {github,gitlab}] [--insecure] [-u BASE_URL]
                       paths [paths ...]
 
     Maintain local backups of all Git repositories belonging to a user or group.
