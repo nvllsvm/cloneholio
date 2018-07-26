@@ -16,7 +16,7 @@ Maintain local backups of *all Git repositories* belonging to a user or group.
 Installation
 ------------
 
-.. code::
+.. code-block::
 
     $ pip3 install cloneholio
 
@@ -25,7 +25,7 @@ Example
 -------
 This will backup all repositories owned by the `python`_ organziation on GitHub.
 
-.. code::
+.. code-block::
 
     $ cloneholio -t TOKEN -p github python
     INFO Begin "github" processing using "/home/draje/Code/GitLab/nvllsvm/cloneholio"
@@ -40,7 +40,7 @@ This will backup all repositories owned by the `python`_ organziation on GitHub.
 Help
 ----
 
-.. code::
+.. code-block::
 
     $ cloneholio -h
     usage: cloneholio [-h] [-n NUM_PROCESSES] [-d DIRECTORY] -t TOKEN
