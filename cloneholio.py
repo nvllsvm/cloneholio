@@ -72,11 +72,12 @@ def get_gitlab_repos(path, token, ssl_verify, base_url=None):
 
 
 def get_github_repos(path, token, ssl_verify, base_url=None):
-    api = github.Github(
-        token,
-        base_url=base_url,
-        verify=ssl_verify
-    )
+    kwargs = {'verify': ssl_verify}
+    if base_url:
+        kwargs['base_url'] = base_url
+
+    api = github.Github(token, **kwargs)
+
     if base_url is not None:
         # Don't ever fucking do this
         # Fixes bug in upstream PyGithub
