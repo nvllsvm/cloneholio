@@ -67,7 +67,7 @@ Help
       -d DIRECTORY, --directory DIRECTORY
       -t TOKEN, --token TOKEN
       -p {github,gitlab}, --provider {github,gitlab}
-      -s, --no-ssl-verify
+      --insecure            Ignore SSL errors
       -u BASE_URL, --base-url BASE_URL
 
 
