@@ -9,7 +9,8 @@ Maintain local backups of *all Git repositories* belonging to a user or group.
 **Features:**
 
 - Supports both GitHub and GitLab.
-- Backup *all repositories* owned by users and groups.
+- Backup *all repositories* owned by users, groups, and subgroups.
+- Backup individual repositories.
 - Scale to a configurable number of processes.
 
 
