@@ -57,11 +57,11 @@ def get_gitlab_projects(path, api):
         yield from group.projects.list(all_available=True, as_list=False)
 
 
-def get_gitlab_repos(path, token, ssl_verify, base_url=None):
+def get_gitlab_repos(path, token, insecure, base_url=None):
     api = gitlab.Gitlab(
         base_url or GITLAB_URL,
         private_token=token,
-        ssl_verify=ssl_verify
+        ssl_verify=not insecure
     )
 
     for project in get_gitlab_projects(path, api):
@@ -71,8 +71,8 @@ def get_gitlab_repos(path, token, ssl_verify, base_url=None):
             yield project_path, project.ssh_url_to_repo
 
 
-def get_github_repos(path, token, ssl_verify, base_url=None):
-    kwargs = {'verify': ssl_verify}
+def get_github_repos(path, token, insecure, base_url=None):
+    kwargs = {'verify': not insecure}
     if base_url:
         kwargs['base_url'] = base_url
 
@@ -170,8 +170,8 @@ Token creation:
     parser.add_argument(
         '--insecure',
         action='store_const',
-        const=False,
-        default=True,
+        const=True,
+        default=False,
         help='Ignore SSL errors'
     )
     parser.add_argument('-u', '--base-url')
@@ -185,7 +185,7 @@ Token creation:
 
     repos = itertools.chain(*[
         PROVIDER_FUNCTIONS[args.provider](
-            path, args.token, args.no_ssl_verify, args.base_url
+            path, args.token, args.insecure, args.base_url
         )
         for path in args.paths
     ])
