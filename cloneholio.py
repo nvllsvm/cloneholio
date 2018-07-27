@@ -121,7 +121,9 @@ def download_repos(repos, directory, **kwargs):
             if local_path.exists():
                 repo = git.Repo(local_path)
                 for remote in repo.remotes:
-                    remote.fetch()
+                    remote.update()
+                    if remote.refs:
+                        remote.fetch()
                 if repo.branches:
                     repo.remote().pull()
             else:
