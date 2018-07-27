@@ -109,7 +109,7 @@ def _make_github_absolute_url(self, url):
     return url
 
 
-def download_repos(repos, directory):
+def download_repos(repos, directory, **kwargs):
     logger = logging.getLogger()
 
     fail_count = 0
@@ -125,7 +125,7 @@ def download_repos(repos, directory):
                 if repo.branches:
                     repo.remote().pull()
             else:
-                git.Repo.clone_from(url, local_path)
+                git.Repo.clone_from(url, local_path, **kwargs)
         except git.GitCommandError as e:
             fail_count += 1
             logger.error('Git error %s "%s"', path, ' '.join(e.command))
@@ -168,6 +168,12 @@ Token creation:
     parser.add_argument('-t', '--token', required=True)
     parser.add_argument('-p', '--provider', choices=PROVIDER_FUNCTIONS.keys())
     parser.add_argument(
+        '--depth',
+        type=int,
+        default=False,
+        help='Corresponds to the git clone --depth option'
+    )
+    parser.add_argument(
         '--insecure',
         action='store_const',
         const=True,
@@ -193,6 +199,7 @@ Token creation:
     total_repos = 0
     with consumers.Pool(download_repos,
                         args=[directory],
+                        kwargs={'depth': args.depth},
                         quantity=args.num_processes) as pool:
         for path, url in repos:
             total_repos += 1
