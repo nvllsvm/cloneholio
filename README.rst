@@ -44,7 +44,8 @@ Help
 
     $ cloneholio -h
     usage: cloneholio [-h] [-n NUM_PROCESSES] [-d DIRECTORY] -t TOKEN
-                      [-p {github,gitlab}] [--insecure] [-u BASE_URL]
+                      [-p {github,gitlab}] [--depth DEPTH] [--insecure]
+                      [-u BASE_URL]
                       paths [paths ...]
 
     Maintain local backups of all Git repositories belonging to a user or group.
@@ -67,6 +68,7 @@ Help
       -d DIRECTORY, --directory DIRECTORY
       -t TOKEN, --token TOKEN
       -p {github,gitlab}, --provider {github,gitlab}
+      --depth DEPTH         Corresponds to the git clone --depth option
       --insecure            Ignore SSL errors
       -u BASE_URL, --base-url BASE_URL
 
