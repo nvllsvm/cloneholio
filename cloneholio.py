@@ -9,6 +9,7 @@ import consumers
 import git
 import github
 import gitlab
+import pkg_resources
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -183,6 +184,11 @@ Token creation:
         help='Ignore SSL errors'
     )
     parser.add_argument('-u', '--base-url')
+    parser.add_argument(
+        '--version',
+        action='version',
+        version=pkg_resources.get_distribution('cloneholio').version
+    )
     parser.add_argument('paths', nargs='+')
     args = parser.parse_args()
 
