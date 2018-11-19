@@ -113,7 +113,7 @@ def _make_github_absolute_url(self, url):
 def download_repos(repos, directory, **kwargs):
     logger = logging.getLogger()
 
-    fail_count = 0
+    results = {}
 
     for path, url in repos:
         logger.info('Processing %s', path)
@@ -129,11 +129,12 @@ def download_repos(repos, directory, **kwargs):
                     repo.remote().pull()
             else:
                 git.Repo.clone_from(url, local_path, **kwargs)
+            results[local_path] = True
         except git.GitCommandError as e:
-            fail_count += 1
+            results[local_path] = False
             logger.error('Git error %s "%s"', path, ' '.join(e.command))
 
-    return fail_count
+    return results
 
 
 PROVIDER_FUNCTIONS = {
@@ -213,8 +214,12 @@ Token creation:
             total_repos += 1
             pool.put(path, url)
 
+    failures = 0
+    for result in pool.results:
+        failures += sum(1 for v in result.values() if not v)
+
     logging.info('Finished "%s" processing %d repos with %d failures',
-                 args.provider, total_repos, sum(pool.results))
+                 args.provider, total_repos, failures)
 
 
 if __name__ == '__main__':
