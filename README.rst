@@ -46,7 +46,7 @@ Help
     $ cloneholio -h
     usage: cloneholio [-h] [-n NUM_PROCESSES] [-d DIRECTORY] -t TOKEN
                       [-p {github,gitlab}] [--depth DEPTH] [--insecure]
-                      [-u BASE_URL]
+                      [-u BASE_URL] [--version]
                       paths [paths ...]
 
     Maintain local backups of all Git repositories belonging to a user or group.
@@ -72,6 +72,7 @@ Help
       --depth DEPTH         Corresponds to the git clone --depth option
       --insecure            Ignore SSL errors
       -u BASE_URL, --base-url BASE_URL
+      --version             show program's version number and exit
 
 
 .. |Version| image:: https://img.shields.io/pypi/v/cloneholio.svg?
