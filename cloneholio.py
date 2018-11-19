@@ -137,6 +137,32 @@ def download_repos(repos, directory, **kwargs):
     return results
 
 
+def find_orphans(root, repos):
+    """Log unexpected local paths
+
+    An unexpected path may be the result of a repository being deleted at
+    origin after at least one cloneholio clone.
+    """
+    parents = set()
+    for path in repos:
+        parents.update(path.parents)
+
+    orphans = []
+
+    stack = [root]
+    while stack:
+        for path in stack.pop().iterdir():
+            if path in repos:
+                continue
+
+            if path not in parents:
+                orphans.append(path.relative_to(root))
+            elif path.is_dir():
+                stack.append(path)
+
+    return orphans
+
+
 PROVIDER_FUNCTIONS = {
     'github': get_github_repos,
     'gitlab': get_gitlab_repos
@@ -215,11 +241,18 @@ Token creation:
             pool.put(path, url)
 
     failures = 0
+    local_paths = []
     for result in pool.results:
         failures += sum(1 for v in result.values() if not v)
+        local_paths.extend(list(result.keys()))
 
-    logging.info('Finished "%s" processing %d repos with %d failures',
-                 args.provider, total_repos, failures)
+    orphans = find_orphans(directory, local_paths)
+    for path in sorted(orphans):
+        logging.warning('Orphan %s', path)
+
+    logging.info(
+        'Finished "%s" processing %d repos with %d failures and %d orphans',
+        args.provider, total_repos, failures, len(orphans))
 
 
 if __name__ == '__main__':
