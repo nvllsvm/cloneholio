@@ -2,6 +2,7 @@ import argparse
 import itertools
 import logging
 import pathlib
+import shutil
 import urllib.parse
 import urllib3
 
@@ -156,7 +157,7 @@ def find_orphans(root, repos):
                 continue
 
             if path not in parents:
-                orphans.append(path.relative_to(root))
+                orphans.append(path)
             elif path.is_dir():
                 stack.append(path)
 
@@ -210,6 +211,13 @@ Token creation:
         default=False,
         help='Ignore SSL errors'
     )
+    parser.add_argument(
+        '--remove-orphans',
+        action='store_const',
+        const=True,
+        default=False,
+        help='Remove orphaned directories'
+    )
     parser.add_argument('-u', '--base-url')
     parser.add_argument(
         '--version',
@@ -248,7 +256,12 @@ Token creation:
 
     orphans = find_orphans(directory, local_paths)
     for path in sorted(orphans):
-        logging.warning('Orphan %s', path)
+        log_path = path.relative_to(directory)
+        if args.remove_orphans:
+            logging.warning('Removing orphan %s', log_path)
+            shutil.rmtree(path)
+        else:
+            logging.warning('Orphan %s', log_path)
 
     logging.info(
         'Finished "%s" processing %d repos with %d failures and %d orphans',
