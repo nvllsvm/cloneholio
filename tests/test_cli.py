@@ -21,7 +21,7 @@ def test_invalid_provider():
     assert process.returncode == 2
     assert (
         process.stderr.decode().split('\n')[-2] ==
-        "cloneholio: error: argument -p/--provider: invalid choice: 'microsofthub' (choose from 'github', 'gitlab')"
+        "cloneholio: error: argument -p/--provider: invalid choice: 'microsofthub' (choose from 'github', 'gitlab')"  # noqa: E501
     )
 
 
