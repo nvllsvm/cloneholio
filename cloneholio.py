@@ -218,6 +218,12 @@ Token creation:
         default=False,
         help='Remove orphaned directories'
     )
+    parser.add_argument(
+        '-e', '--exclude',
+        action='append',
+        default=[],
+        help='Paths to exclude from backup'
+    )
     parser.add_argument('-u', '--base-url')
     parser.add_argument(
         '--version',
@@ -240,13 +246,20 @@ Token creation:
     ])
 
     total_repos = 0
+    exclude = set(args.exclude)
     with consumers.Pool(download_repos,
                         args=[directory],
                         kwargs={'depth': args.depth},
                         quantity=args.num_processes) as pool:
         for path, url in repos:
-            total_repos += 1
-            pool.put(path, url)
+            split_path = path.split('/')
+            parts = {
+                '/'.join(split_path[0:i])
+                for i in range(1, len(split_path)+1)
+            }
+            if not exclude.intersection(parts):
+                total_repos += 1
+                pool.put(path, url)
 
     failures = 0
     local_paths = []
