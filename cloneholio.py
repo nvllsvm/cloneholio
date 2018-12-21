@@ -4,13 +4,13 @@ import logging
 import pathlib
 import shutil
 import urllib.parse
-import urllib3
 
 import consumers
 import git
 import github
 import gitlab
 import pkg_resources
+import urllib3
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
