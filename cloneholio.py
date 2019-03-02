@@ -195,36 +195,43 @@ Token creation:
         help='Number of processes to use',
         type=int,
         default=1)
-    parser.add_argument('-d', '--directory', default='.')
-    parser.add_argument('-t', '--token', required=True)
-    parser.add_argument('-p', '--provider', choices=PROVIDER_FUNCTIONS.keys())
-    parser.add_argument(
-        '--depth',
-        type=int,
-        default=False,
-        help='Corresponds to the git clone --depth option'
+
+    group_remote = parser.add_argument_group('remote configuration')
+    group_remote.add_argument('-t', '--token', required=True)
+    group_remote.add_argument(
+        '-p', '--provider', choices=PROVIDER_FUNCTIONS.keys()
     )
-    parser.add_argument(
+    group_remote.add_argument(
         '--insecure',
         action='store_const',
         const=True,
         default=False,
         help='Ignore SSL errors'
     )
-    parser.add_argument(
+    group_remote.add_argument('-u', '--base-url')
+    group_remote.add_argument(
+        '-e', '--exclude',
+        action='append',
+        default=[],
+        help='Paths to exclude from backup'
+    )
+
+    group_local = parser.add_argument_group('local configuration')
+    group_local.add_argument('-d', '--directory', default='.')
+    group_local.add_argument(
         '--remove-orphans',
         action='store_const',
         const=True,
         default=False,
         help='Remove orphaned directories'
     )
+
     parser.add_argument(
-        '-e', '--exclude',
-        action='append',
-        default=[],
-        help='Paths to exclude from backup'
+        '--depth',
+        type=int,
+        default=False,
+        help='Corresponds to the git clone --depth option'
     )
-    parser.add_argument('-u', '--base-url')
     parser.add_argument(
         '--version',
         action='version',
