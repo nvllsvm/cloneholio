@@ -2,12 +2,6 @@ import sys
 
 import setuptools
 
-setup_requires = []
-
-if 'test' in sys.argv:
-    setup_requires.append('pytest-runner')
-
-
 setuptools.setup(
     name='cloneholio',
     version='0.5.0',
@@ -24,7 +18,9 @@ setuptools.setup(
         'pygithub',
         'python-gitlab'
     ],
-    tests_require=['pytest'],
+    extras_require={
+        'test': 'pytest'
+    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
