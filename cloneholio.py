@@ -203,9 +203,7 @@ Token creation:
     )
     group_remote.add_argument(
         '--insecure',
-        action='store_const',
-        const=True,
-        default=False,
+        action='store_true',
         help='Ignore SSL errors'
     )
     group_remote.add_argument('-u', '--base-url')
@@ -220,9 +218,7 @@ Token creation:
     group_local.add_argument('-d', '--directory', default='.')
     group_local.add_argument(
         '--remove-orphans',
-        action='store_const',
-        const=True,
-        default=False,
+        action='store_true',
         help='Remove orphaned directories'
     )
 
