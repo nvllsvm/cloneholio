@@ -2,7 +2,7 @@ import sys
 
 import setuptools
 
-setup_requires = ['setuptools_scm']
+setup_requires = []
 
 if 'test' in sys.argv:
     setup_requires.append('pytest-runner')
@@ -10,6 +10,7 @@ if 'test' in sys.argv:
 
 setuptools.setup(
     name='cloneholio',
+    version='0.5.0',
     description='I am cloneholio! I need syncing of my repos.',
     license='MIT',
     author='Andrew Rabert',
@@ -24,13 +25,11 @@ setuptools.setup(
         'python-gitlab'
     ],
     tests_require=['pytest'],
-    setup_requires=setup_requires,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3 :: Only'
     ],
-    python_requires='>=3.6',
-    use_scm_version=True
+    python_requires='>=3.6'
 )
