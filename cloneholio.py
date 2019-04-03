@@ -171,10 +171,6 @@ PROVIDER_FUNCTIONS = {
 
 
 def main():
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(levelname)s %(message)s')
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
         description="""
@@ -229,12 +225,21 @@ Token creation:
         help='Corresponds to the git clone --depth option'
     )
     parser.add_argument(
+        '-q', '--quiet',
+        action='store_true',
+        help='Suppress informational output'
+    )
+    parser.add_argument(
         '--version',
         action='version',
         version=pkg_resources.get_distribution('cloneholio').version
     )
     parser.add_argument('paths', nargs='+')
     args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.WARN if args.quiet else logging.INFO,
+        format='%(levelname)s %(message)s')
 
     directory = pathlib.Path(args.directory).absolute()
 
