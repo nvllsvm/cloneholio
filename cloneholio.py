@@ -280,7 +280,10 @@ Token creation:
         log_path = path.relative_to(directory)
         if args.remove_orphans:
             logging.warning('Removing orphan %s', log_path)
-            shutil.rmtree(path)
+            if path.is_dir():
+                shutil.rmtree(path)
+            else:
+                path.unlink()
         else:
             logging.warning('Orphan %s', log_path)
 
