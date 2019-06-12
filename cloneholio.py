@@ -1,11 +1,11 @@
 import argparse
+import concurrent.futures
 import itertools
 import logging
 import pathlib
 import shutil
 import urllib.parse
 
-import consumers
 import git
 import github
 import gitlab
@@ -111,31 +111,25 @@ def _make_github_absolute_url(self, url):
     return url
 
 
-def download_repos(repos, directory, **kwargs):
+def download_repo(path, url, directory, **kwargs):
     logger = logging.getLogger()
-
-    results = {}
-
-    for path, url in repos:
-        logger.info('Processing %s', path)
-        local_path = pathlib.Path(directory, path)
-        try:
-            if local_path.exists():
-                repo = git.Repo(local_path)
-                for remote in repo.remotes:
-                    remote.update()
-                    if remote.refs:
-                        remote.fetch()
-                if repo.branches:
-                    repo.remote().pull()
-            else:
-                git.Repo.clone_from(url, local_path, **kwargs)
-            results[local_path] = True
-        except git.GitCommandError as e:
-            results[local_path] = False
-            logger.error('Git error %s "%s"', path, ' '.join(e.command))
-
-    return results
+    logger.info('Processing %s', path)
+    local_path = pathlib.Path(directory, path)
+    try:
+        if local_path.exists():
+            repo = git.Repo(local_path)
+            for remote in repo.remotes:
+                remote.update()
+                if remote.refs:
+                    remote.fetch()
+            if repo.branches:
+                repo.remote().pull()
+        else:
+            git.Repo.clone_from(url, local_path, **kwargs)
+    except git.GitCommandError as e:
+        return False
+        logger.error('Git error %s "%s"', path, ' '.join(e.command))
+    return local_path
 
 
 def find_orphans(root, repos):
@@ -256,10 +250,11 @@ Token creation:
 
     total_repos = 0
     exclude = set(args.exclude)
-    with consumers.Pool(download_repos,
-                        args=[directory],
-                        kwargs={'depth': args.depth},
-                        quantity=args.num_processes) as pool:
+    with concurrent.futures.ProcessPoolExecutor(
+            args.num_processes) as executor:
+
+        futures = []
+
         for path, url in repos:
             split_path = path.split('/')
             parts = {
@@ -268,13 +263,24 @@ Token creation:
             }
             if not exclude.intersection(parts):
                 total_repos += 1
-                pool.put(path, url)
+                futures.append(
+                    executor.submit(
+                        download_repo,
+                        path,
+                        url,
+                        directory,
+                        depth=args.depth
+                    )
+                )
 
-    failures = 0
-    local_paths = []
-    for result in pool.results:
-        failures += sum(1 for v in result.values() if not v)
-        local_paths.extend(list(result.keys()))
+        failures = 0
+        local_paths = []
+        for future in concurrent.futures.as_completed(futures):
+            result = future.result()
+            if result:
+                local_paths.append(result)
+            else:
+                failures += 1
 
     orphans = find_orphans(directory, local_paths)
     for path in sorted(orphans):

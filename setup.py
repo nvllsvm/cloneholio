@@ -11,7 +11,6 @@ setuptools.setup(
     py_modules=['cloneholio'],
     entry_points={'console_scripts': ['cloneholio=cloneholio:main']},
     install_requires=[
-        'consumers',
         'gitpython',
         'pygithub',
         'python-gitlab'
