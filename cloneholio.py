@@ -172,6 +172,7 @@ PROVIDER_FUNCTIONS = {
 
 def main():
     parser = argparse.ArgumentParser(
+        'cloneholio',
         formatter_class=argparse.RawTextHelpFormatter,
         description="""
 Maintain local backups of all Git repositories belonging to a user or group.
