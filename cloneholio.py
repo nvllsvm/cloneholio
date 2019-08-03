@@ -17,6 +17,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 GITLAB_URL = 'https://gitlab.com'
 
+LOGGER = logging.getLogger('cloneholio')
+
 
 def get_gitlab_groups(name, api):
     try:
@@ -111,8 +113,7 @@ def _make_github_absolute_url(self, url):
 
 
 def download_repo(path, url, directory, **kwargs):
-    logger = logging.getLogger()
-    logger.info('Processing %s', path)
+    LOGGER.info('Processing %s', path)
     local_path = pathlib.Path(directory, path)
     try:
         if local_path.exists():
@@ -127,7 +128,7 @@ def download_repo(path, url, directory, **kwargs):
             git.Repo.clone_from(url, local_path, **kwargs)
     except git.GitCommandError as e:
         return False
-        logger.error('Git error %s "%s"', path, ' '.join(e.command))
+        LOGGER.error('Git error %s "%s"', path, ' '.join(e.command))
     return local_path
 
 
@@ -237,8 +238,8 @@ Token creation:
 
     directory = pathlib.Path(args.directory).absolute()
 
-    logging.info('Begin "%s" processing using "%s"',
-                 args.provider, directory)
+    LOGGER.info('Begin "%s" processing using "%s"',
+                args.provider, directory)
 
     repos = itertools.chain(*[
         PROVIDER_FUNCTIONS[args.provider](
@@ -285,15 +286,15 @@ Token creation:
     for path in sorted(orphans):
         log_path = path.relative_to(directory)
         if args.remove_orphans:
-            logging.warning('Removing orphan %s', log_path)
+            LOGGER.warning('Removing orphan %s', log_path)
             if path.is_dir():
                 shutil.rmtree(path)
             else:
                 path.unlink()
         else:
-            logging.warning('Orphan %s', log_path)
+            LOGGER.warning('Orphan %s', log_path)
 
-    logging.info(
+    LOGGER.info(
         'Finished "%s" processing %d repos with %d failures and %d orphans',
         args.provider, total_repos, failures, len(orphans))
 
