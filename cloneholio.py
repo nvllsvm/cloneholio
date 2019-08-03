@@ -81,7 +81,6 @@ def get_github_repos(path, token, insecure, base_url=None):
     api = github.Github(token, **kwargs)
 
     if base_url is not None:
-        # Don't ever fucking do this
         # Fixes bug in upstream PyGithub
         api._Github__requester._Requester__makeAbsoluteUrl = \
             _make_github_absolute_url.__get__(
