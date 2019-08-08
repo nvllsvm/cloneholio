@@ -4,112 +4,15 @@ import itertools
 import logging
 import pathlib
 import shutil
-import urllib.parse
 
 import git
-import github
-import gitlab
 import pkg_resources
-import urllib3
 
+import cloneholio.github
+import cloneholio.gitlab
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-GITLAB_URL = 'https://gitlab.com'
 
 LOGGER = logging.getLogger('cloneholio')
-
-
-def get_gitlab_groups(name, api):
-    try:
-        yield api.users.list(username=name)[0]
-    except (gitlab.GitlabGetError, IndexError):
-        pass
-
-    try:
-        group = api.groups.get(name)
-    except gitlab.GitlabGetError:
-        return
-
-    yield group
-
-    groups = [group]
-    while groups:
-        subgroups = []
-        for group in groups:
-            for subgroup in group.subgroups.list(
-                    all_available=True, as_list=False):
-                subgroup = api.groups.get(subgroup.id)
-                yield subgroup
-                subgroups.append(subgroup)
-        groups = subgroups
-
-
-def get_gitlab_project(path, api):
-    try:
-        return api.projects.get(path)
-    except gitlab.GitlabGetError:
-        pass
-
-
-def get_gitlab_projects(path, api):
-    project = get_gitlab_project(path, api)
-    if project:
-        yield project
-
-    for group in get_gitlab_groups(path, api):
-        yield from group.projects.list(all_available=True, as_list=False)
-
-
-def get_gitlab_repos(path, token, insecure, base_url=None):
-    api = gitlab.Gitlab(
-        base_url or GITLAB_URL,
-        private_token=token,
-        ssl_verify=not insecure
-    )
-
-    for project in get_gitlab_projects(path, api):
-        project_path = project.path_with_namespace
-        # Exclude forks under different groups/users
-        if project_path.split('/')[0].lower() == path.lower():
-            yield project_path, project.ssh_url_to_repo
-
-
-def get_github_repos(path, token, insecure, base_url=None):
-    kwargs = {'verify': not insecure}
-    if base_url:
-        kwargs['base_url'] = base_url
-
-    api = github.Github(token, **kwargs)
-
-    if base_url is not None:
-        # Fixes bug in upstream PyGithub
-        api._Github__requester._Requester__makeAbsoluteUrl = \
-            _make_github_absolute_url.__get__(
-                api._Github__requester, github.Requester.Requester
-            )
-
-    repos = []
-    if '/' in path:
-        repo = api.get_repo(path)
-        if repo:
-            repos.append(repo)
-    else:
-        repos = api.get_user(path).get_repos()
-
-    for repo in repos:
-        yield repo.full_name, repo.ssh_url
-
-
-def _make_github_absolute_url(self, url):
-    if url.startswith("/"):
-        url = self._Requester__prefix + url
-    else:
-        o = urllib.parse.urlparse(url)
-        url = o.path
-        if o.query != "":
-            url += "?" + o.query
-    return url
 
 
 def download_repo(path, url, directory, **kwargs):
@@ -159,8 +62,8 @@ def find_orphans(root, repos):
 
 
 PROVIDER_FUNCTIONS = {
-    'github': get_github_repos,
-    'gitlab': get_gitlab_repos
+    'github': cloneholio.github.get_repos,
+    'gitlab': cloneholio.gitlab.get_repos
 }
 
 
