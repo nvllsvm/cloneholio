@@ -7,7 +7,7 @@ import github
 LOGGER = logging.getLogger('cloneholio')
 
 
-def get_repos(path, token, insecure, base_url=None):
+def get_repos(path, token, insecure=False, base_url=None):
     kwargs = {'verify': not insecure}
     if base_url:
         kwargs['base_url'] = base_url
@@ -23,9 +23,12 @@ def get_repos(path, token, insecure, base_url=None):
 
     repos = []
     if '/' in path:
-        repo = api.get_repo(path)
-        if repo:
-            repos.append(repo)
+        try:
+            repo = api.get_repo(path)
+            if repo:
+                repos.append(repo)
+        except github.UnknownObjectException:
+            LOGGER.warning('GitHub repo not found: %s', path)
     else:
         repos = api.get_user(path).get_repos()
 
