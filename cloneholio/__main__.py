@@ -128,6 +128,11 @@ Token creation:
         help='Suppress informational output'
     )
     parser.add_argument(
+        '--list',
+        action='store_true',
+        help='List remote repositories then exit.'
+    )
+    parser.add_argument(
         '--version',
         action='version',
         version=pkg_resources.get_distribution('cloneholio').version
@@ -166,6 +171,9 @@ Token creation:
             }
             if not exclude.intersection(parts):
                 total_repos += 1
+                if args.list:
+                    print(path)
+                    continue
                 futures.append(
                     executor.submit(
                         download_repo,
@@ -176,6 +184,8 @@ Token creation:
                     )
                 )
 
+        if args.list:
+            parser.exit()
         failures = 0
         local_paths = []
         for future in concurrent.futures.as_completed(futures):
