@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.2 (2019-08-12)
+- Fix typo
+
 ## 0.7.1 (2019-08-12)
 - Fix insecure HTTPS errors when using --insecure
 

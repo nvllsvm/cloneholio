@@ -4,7 +4,7 @@ import itertools
 import logging
 import pathlib
 import shutil
-import urrlib3
+import urllib3
 
 import git
 import pkg_resources
