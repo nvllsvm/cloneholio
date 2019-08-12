@@ -4,6 +4,7 @@ import itertools
 import logging
 import pathlib
 import shutil
+import urrlib3
 
 import git
 import pkg_resources
@@ -148,6 +149,9 @@ Token creation:
 
     LOGGER.info('Begin "%s" processing using "%s"',
                 args.provider, directory)
+
+    if args.insecure:
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     repos = itertools.chain(*[
         PROVIDER_FUNCTIONS[args.provider](
