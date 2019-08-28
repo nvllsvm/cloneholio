@@ -108,6 +108,11 @@ Token creation:
         default=[],
         help='Paths to exclude from backup'
     )
+    group_remote.add_argument(
+        '--exclude-archived',
+        action='store_true',
+        help='exclude archived repositories'
+    )
 
     group_local = parser.add_argument_group('local configuration')
     group_local.add_argument('-d', '--directory', default='.')
@@ -155,7 +160,8 @@ Token creation:
 
     repos = itertools.chain(*[
         PROVIDER_FUNCTIONS[args.provider](
-            path, args.token, args.insecure, args.base_url
+            path, args.token, args.insecure, args.base_url,
+            not args.exclude_archived
         )
         for path in args.paths
     ])

@@ -1,5 +1,8 @@
 # Changelog
 
+## Next
+- Add `--exclude-archived` option to exclude archived repositories
+
 ## 0.7.2 (2019-08-12)
 - Fix typo
 

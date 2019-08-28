@@ -49,7 +49,7 @@ def _get_projects(path, api):
         yield from group.projects.list(all_available=True, as_list=False)
 
 
-def get_repos(path, token, insecure, base_url=None):
+def get_repos(path, token, insecure, base_url=None, archived=True):
     api = gitlab.Gitlab(
         base_url or GITLAB_URL,
         private_token=token,
@@ -60,4 +60,6 @@ def get_repos(path, token, insecure, base_url=None):
         project_path = project.path_with_namespace
         # Exclude forks under different groups/users
         if project_path.split('/')[0].lower() == path.lower():
+            if project.archived and not archived:
+                continue
             yield project_path, project.ssh_url_to_repo
