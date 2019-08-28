@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 0.8.0 (2019-08-28)
 - Add `--exclude-archived` option to exclude archived repositories
 
 ## 0.7.2 (2019-08-12)
