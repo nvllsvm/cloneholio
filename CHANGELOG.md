@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.1 (2019-09-13)
+- Fix group fork filtering
+
 ## 0.8.0 (2019-08-28)
 - Add `--exclude-archived` option to exclude archived repositories
 
