@@ -56,10 +56,17 @@ def get_repos(path, token, insecure, base_url=None, archived=True):
         ssl_verify=not insecure
     )
 
+    path_prefix = path.lower()
+    if path[-1] != '/':
+        path_prefix += '/'
+
     for project in _get_projects(path, api):
         project_path = project.path_with_namespace
         # Exclude forks under different groups/users
-        if project_path.split('/')[0].lower() == path.lower():
+        cmp_path = path.lower()
+        if cmp_path[-1] != '/':
+            cmp_path += '/'
+        if cmp_path.startswith(path_prefix):
             if project.archived and not archived:
                 continue
             yield project_path, project.ssh_url_to_repo
