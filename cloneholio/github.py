@@ -7,7 +7,8 @@ import github
 LOGGER = logging.getLogger('cloneholio')
 
 
-def get_repos(path, token, insecure=False, base_url=None, archived=True):
+def get_repos(path, token, insecure=False, base_url=None, archived=True,
+              is_fork=True):
     kwargs = {'verify': not insecure}
     if base_url:
         kwargs['base_url'] = base_url
@@ -33,6 +34,8 @@ def get_repos(path, token, insecure=False, base_url=None, archived=True):
         repos = api.get_user(path).get_repos()
 
     for repo in repos:
+        if repo.fork and not is_fork:
+            continue
         if repo.archived and not archived:
             continue
         yield repo.full_name, repo.ssh_url

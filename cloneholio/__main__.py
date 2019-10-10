@@ -113,6 +113,11 @@ Token creation:
         action='store_true',
         help='exclude archived repositories'
     )
+    group_remote.add_argument(
+        '--exclude-forks',
+        action='store_true',
+        help='exclude repositories that are forks'
+    )
 
     group_local = parser.add_argument_group('local configuration')
     group_local.add_argument('-d', '--directory', default='.')
@@ -161,7 +166,7 @@ Token creation:
     repos = itertools.chain(*[
         PROVIDER_FUNCTIONS[args.provider](
             path, args.token, args.insecure, args.base_url,
-            not args.exclude_archived
+            not args.exclude_archived, not args.exclude_forks
         )
         for path in args.paths
     ])
