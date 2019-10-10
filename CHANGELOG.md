@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.0 (2019-10-10)
+- Add `--eclude-forks` option to exclude repositories that are forks
+
 ## 0.8.1 (2019-09-13)
 - Fix group fork filtering
 

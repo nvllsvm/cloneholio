@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name='cloneholio',
-    version='0.8.1',
+    version='0.9.0',
     description='I am cloneholio! I need syncing of my repos.',
     license='MIT',
     author='Andrew Rabert',
