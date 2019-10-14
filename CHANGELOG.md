@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.1 (2019-10-14)
+- Fix Gitlab error when retrieving subgroup
+
 ## 0.9.0 (2019-10-10)
 - Add `--exclude-forks` option to exclude repositories that are forks
 
