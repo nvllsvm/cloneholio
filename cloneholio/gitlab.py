@@ -27,7 +27,10 @@ def _get_groups(name, api):
         for group in groups:
             for subgroup in group.subgroups.list(
                     all_available=True, as_list=False):
-                subgroup = api.groups.get(subgroup.id)
+                try:
+                    subgroup = api.groups.get(subgroup.id)
+                except gitlab.GitlabGetError:
+                    continue
                 yield subgroup
                 subgroups.append(subgroup)
         groups = subgroups
