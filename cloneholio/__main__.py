@@ -156,7 +156,8 @@ Token creation:
         action='version',
         version=pkg_resources.get_distribution('cloneholio').version
     )
-    parser.add_argument('paths', nargs='+')
+    parser.add_argument('--gists', action='store_true')
+    parser.add_argument('paths', nargs='?')
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -171,13 +172,20 @@ Token creation:
     if args.insecure:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    repos = itertools.chain(*[
-        PROVIDER_FUNCTIONS[args.provider](
-            path, args.token, args.insecure, args.base_url,
-            not args.exclude_archived, not args.exclude_forks
-        )
-        for path in args.paths
-    ])
+    if args.paths:
+        repos = itertools.chain(*[
+            PROVIDER_FUNCTIONS[args.provider](
+                path, args.token, args.insecure, args.base_url,
+                not args.exclude_archived, not args.exclude_forks
+            )
+            for path in args.paths
+        ])
+
+    if args.gists:
+        gists = cloneholio.github.get_gists('nvllsvm', args.token, args.insecure, args.base_url)
+        repos = list(gists)
+        for gist in gists:
+            print(gist)
 
     total_repos = 0
     exclude = set(args.exclude)
