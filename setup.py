@@ -13,7 +13,8 @@ setuptools.setup(
     install_requires=[
         'gitpython',
         'pygithub',
-        'python-gitlab'
+        'python-gitlab',
+        'tqdm',
     ],
     extras_require={
         'test': 'pytest'

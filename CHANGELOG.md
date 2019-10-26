@@ -1,5 +1,8 @@
 # Changelog
 
+## Next
+- Add progress bar
+
 ## 0.9.1 (2019-10-14)
 - Fix Gitlab error when retrieving subgroup
 

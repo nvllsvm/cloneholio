@@ -4,10 +4,12 @@ import itertools
 import logging
 import pathlib
 import shutil
+import sys
 import urllib3
 
 import git
 import pkg_resources
+import tqdm
 
 import cloneholio.github
 import cloneholio.gitlab
@@ -133,10 +135,16 @@ Token creation:
         default=False,
         help='Corresponds to the git clone --depth option'
     )
-    parser.add_argument(
+    output_mutex = parser.add_mutually_exclusive_group()
+    output_mutex.add_argument(
         '-q', '--quiet',
         action='store_true',
         help='Suppress informational output'
+    )
+    output_mutex.add_argument(
+        '--progress',
+        action='store_true',
+        help='Show progress bar'
     )
     parser.add_argument(
         '--list',
@@ -152,7 +160,7 @@ Token creation:
     args = parser.parse_args()
 
     logging.basicConfig(
-        level=logging.WARN if args.quiet else logging.INFO,
+        level=logging.WARN if args.quiet or args.progress else logging.INFO,
         format='%(levelname)s %(message)s')
 
     directory = pathlib.Path(args.directory).absolute()
@@ -203,7 +211,12 @@ Token creation:
             parser.exit()
         failures = 0
         local_paths = []
-        for future in concurrent.futures.as_completed(futures):
+
+        iterable = concurrent.futures.as_completed(futures)
+        if args.progress and sys.stdout.isatty():
+            iterable = tqdm.tqdm(iterable, total=total_repos)
+
+        for future in iterable:
             result = future.result()
             if result:
                 local_paths.append(result)
