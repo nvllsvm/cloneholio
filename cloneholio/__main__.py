@@ -18,7 +18,7 @@ import cloneholio.gitlab
 LOGGER = logging.getLogger('cloneholio')
 
 
-def download_repo(path, url, directory, **kwargs):
+def download_repo(directory, path, url, **kwargs):
     LOGGER.info('Processing %s', path)
     local_path = pathlib.Path(directory, path)
     try:
@@ -179,45 +179,39 @@ Token creation:
         for path in args.paths
     ])
 
-    total_repos = 0
     exclude = set(args.exclude)
+    targets = []
+    for path, url in repos:
+        split_path = path.split('/')
+        parts = {
+            '/'.join(split_path[0:i])
+            for i in range(1, len(split_path)+1)
+        }
+        if not exclude.intersection(parts):
+            if args.list:
+                print(path)
+            targets.append((path, url))
+
+    if args.list:
+        parser.exit()
+
+    total_repos = len(targets)
     with concurrent.futures.ProcessPoolExecutor(
             args.num_processes) as executor:
 
-        futures = []
-
-        for path, url in repos:
-            split_path = path.split('/')
-            parts = {
-                '/'.join(split_path[0:i])
-                for i in range(1, len(split_path)+1)
-            }
-            if not exclude.intersection(parts):
-                total_repos += 1
-                if args.list:
-                    print(path)
-                    continue
-                futures.append(
-                    executor.submit(
-                        download_repo,
-                        path,
-                        url,
-                        directory,
-                        depth=args.depth
-                    )
-                )
-
-        if args.list:
-            parser.exit()
         failures = 0
         local_paths = []
 
-        iterable = concurrent.futures.as_completed(futures)
+        iterable = concurrent.futures.as_completed(
+            executor.submit(
+                download_repo, directory, *target, depth=args.depth)
+            for target in targets
+        )
+
         if args.progress and sys.stdout.isatty():
             iterable = tqdm.tqdm(
                 iterable,
                 dynamic_ncols=True,
-                miniters=1,
                 total=total_repos
             )
 
