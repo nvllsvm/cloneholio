@@ -214,7 +214,12 @@ Token creation:
 
         iterable = concurrent.futures.as_completed(futures)
         if args.progress and sys.stdout.isatty():
-            iterable = tqdm.tqdm(iterable, total=total_repos)
+            iterable = tqdm.tqdm(
+                iterable,
+                dynamic_ncols=True,
+                miniters=1,
+                total=total_repos
+            )
 
         for future in iterable:
             result = future.result()
