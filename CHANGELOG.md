@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 0.10.0 (2019-10-29)
 - Add progress bar
 
 ## 0.9.1 (2019-10-14)
