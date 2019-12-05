@@ -156,8 +156,14 @@ Token creation:
         action='version',
         version=pkg_resources.get_distribution('cloneholio').version
     )
-    parser.add_argument('paths', nargs='+')
+    parser.add_argument('--all-groups', action='store_true')
+    parser.add_argument('paths', nargs='*')
+
     args = parser.parse_args()
+
+    if not args.all_groups and not args.paths:
+        parser.error('must specifiy at least --all-groups or a path(s)')
+        parser.exit(1)
 
     logging.basicConfig(
         level=logging.WARN if args.quiet or args.progress else logging.INFO,
@@ -171,12 +177,20 @@ Token creation:
     if args.insecure:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+    paths = set(args.paths)
+    if args.all_groups:
+        paths.update(
+            path.split('/')[0].lower()
+            for path in cloneholio.gitlab.get_groups(
+                args.token, args.insecure, args.base_url)
+        )
+
     repos = itertools.chain(*[
         PROVIDER_FUNCTIONS[args.provider](
             path, args.token, args.insecure, args.base_url,
             not args.exclude_archived, not args.exclude_forks
         )
-        for path in args.paths
+        for path in paths
     ])
 
     exclude = set(args.exclude)

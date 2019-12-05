@@ -52,6 +52,16 @@ def _get_projects(path, api):
         yield from group.projects.list(all_available=True, as_list=False)
 
 
+def get_groups(token, insecure, base_url):
+    api = gitlab.Gitlab(
+        base_url or GITLAB_URL,
+        private_token=token,
+        ssl_verify=not insecure
+    )
+    for group in api.groups.list(all_available=True, as_list=False):
+        yield group.full_path
+
+
 def get_repos(path, token, insecure, base_url=None, archived=True,
               is_fork=True):
     api = gitlab.Gitlab(
