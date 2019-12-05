@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.0 (2019-12-05)
+- Add `--all-groups` option to retrieve repos from all available groups (GitLab only)
+
 ## 0.10.0 (2019-10-29)
 - Add progress bar
 
