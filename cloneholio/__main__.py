@@ -194,7 +194,7 @@ Token creation:
     ])
 
     exclude = set(args.exclude)
-    targets = []
+    targets = set()
     for path, url in repos:
         split_path = path.split('/')
         parts = {
@@ -204,7 +204,7 @@ Token creation:
         if not exclude.intersection(parts):
             if args.list:
                 print(path)
-            targets.append((path, url))
+            targets.add((path, url))
 
     if args.list:
         parser.exit()
@@ -219,7 +219,7 @@ Token creation:
         iterable = concurrent.futures.as_completed(
             executor.submit(
                 download_repo, directory, *target, depth=args.depth)
-            for target in targets
+            for target in sorted(targets)
         )
 
         if args.progress and sys.stdout.isatty():
