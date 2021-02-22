@@ -16,9 +16,6 @@ setuptools.setup(
         'python-gitlab',
         'tqdm',
     ],
-    extras_require={
-        'test': 'pytest'
-    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
