@@ -13,4 +13,5 @@ lint:
 test:
   stage: test
   script:
+    - pip install -e .
     - python -m unittest discover tests --buffer --verbose
