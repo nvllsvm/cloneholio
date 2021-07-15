@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.12.0 (2021-07-15)
+- Increase performance by only executing git when the remote reports a change. 
+  The local repo's **mtime** is set to the time of the remote's last update.
+- Fix GitLab pagination
+
 ## 0.11.0 (2019-12-05)
 - Add `--all-groups` option to retrieve repos from all available groups (GitLab only)
 
