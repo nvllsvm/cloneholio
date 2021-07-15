@@ -11,6 +11,7 @@ setuptools.setup(
     packages=['cloneholio'],
     entry_points={'console_scripts': ['cloneholio=cloneholio.__main__:main']},
     install_requires=[
+        'arrow',
         'gitpython',
         'pygithub',
         'requests',

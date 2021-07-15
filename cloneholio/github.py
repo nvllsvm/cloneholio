@@ -38,7 +38,7 @@ def get_repos(path, token, insecure=False, base_url=None, archived=True,
             continue
         if repo.archived and not archived:
             continue
-        yield repo.full_name, repo.ssh_url
+        yield repo.full_name, repo.ssh_url, repo.pushed_at
 
 
 def _make_absolute_url(self, url):

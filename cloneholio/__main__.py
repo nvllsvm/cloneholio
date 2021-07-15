@@ -2,11 +2,13 @@ import argparse
 import concurrent.futures
 import itertools
 import logging
+import os
 import pathlib
 import shutil
 import sys
 import urllib3
 
+import arrow
 import git
 import pkg_resources
 import tqdm
@@ -18,20 +20,24 @@ import cloneholio.gitlab
 LOGGER = logging.getLogger('cloneholio')
 
 
-def download_repo(directory, path, url, **kwargs):
+def download_repo(directory, path, url, last_activity_at, **kwargs):
     LOGGER.info('Processing %s', path)
     local_path = pathlib.Path(directory, path)
+    last_activity_at = arrow.get(last_activity_at).timestamp()
     try:
         if local_path.exists():
-            repo = git.Repo(local_path)
-            for remote in repo.remotes:
-                remote.update()
-                if remote.refs:
-                    remote.fetch()
-            if repo.branches:
-                repo.remote().pull()
+            if local_path.stat().st_mtime != last_activity_at:
+                repo = git.Repo(local_path)
+                for remote in repo.remotes:
+                    remote.update()
+                    if remote.refs:
+                        remote.fetch()
+                if repo.branches:
+                    repo.remote().pull()
         else:
             git.Repo.clone_from(url, local_path, **kwargs)
+        os.utime(local_path,
+                 times=(local_path.stat().st_atime, last_activity_at))
     except git.GitCommandError as e:
         return False
         LOGGER.error('Git error %s "%s"', path, ' '.join(e.command))
@@ -196,7 +202,7 @@ Token creation:
 
     exclude = set(args.exclude)
     targets = set()
-    for path, url in repos:
+    for path, url, last_activity_at in repos:
         split_path = path.split('/')
         parts = {
             '/'.join(split_path[0:i])
@@ -205,7 +211,7 @@ Token creation:
         if not exclude.intersection(parts):
             if args.list:
                 print(path)
-            targets.add((path, url))
+            targets.add((path, url, last_activity_at))
 
     if args.list:
         parser.exit()
