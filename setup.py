@@ -13,7 +13,7 @@ setuptools.setup(
     install_requires=[
         'gitpython',
         'pygithub',
-        'python-gitlab',
+        'requests',
         'tqdm',
     ],
     classifiers=[

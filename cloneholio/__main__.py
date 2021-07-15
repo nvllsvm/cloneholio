@@ -188,7 +188,8 @@ Token creation:
     repos = itertools.chain(*[
         PROVIDER_FUNCTIONS[args.provider](
             path, args.token, args.insecure, args.base_url,
-            not args.exclude_archived, not args.exclude_forks
+            archived=False if args.exclude_archived else None,
+            is_fork=False if args.exclude_forks else None
         )
         for path in paths
     ])

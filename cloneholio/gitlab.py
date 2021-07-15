@@ -1,88 +1,148 @@
-import logging
+import urllib.parse
 
-import gitlab
+import requests
 
 
 GITLAB_URL = 'https://gitlab.com'
 
-LOGGER = logging.getLogger('cloneholio')
-
-
-def _get_groups(name, api):
-    try:
-        yield api.users.list(username=name)[0]
-    except (gitlab.GitlabGetError, IndexError):
-        pass
-
-    try:
-        group = api.groups.get(name)
-    except gitlab.GitlabGetError:
-        return
-
-    yield group
-
-    groups = [group]
-    while groups:
-        subgroups = []
-        for group in groups:
-            for subgroup in group.subgroups.list(
-                    all_available=True, as_list=False):
-                try:
-                    subgroup = api.groups.get(subgroup.id)
-                except gitlab.GitlabGetError:
-                    continue
-                yield subgroup
-                subgroups.append(subgroup)
-        groups = subgroups
-
-
-def _get_project(path, api):
-    try:
-        return api.projects.get(path)
-    except gitlab.GitlabGetError:
-        pass
-
-
-def _get_projects(path, api):
-    project = _get_project(path, api)
-    if project:
-        yield project
-
-    for group in _get_groups(path, api):
-        yield from group.projects.list(all_available=True, as_list=False)
-
 
 def get_groups(token, insecure, base_url):
-    api = gitlab.Gitlab(
-        base_url or GITLAB_URL,
-        private_token=token,
-        ssl_verify=not insecure
-    )
-    for group in api.groups.list(all_available=True, as_list=False):
-        yield group.full_path
+    api = GitLab(
+        url=base_url,
+        token=token)
+    return sorted(api.groups())
 
 
-def get_repos(path, token, insecure, base_url=None, archived=True,
-              is_fork=True):
-    api = gitlab.Gitlab(
-        base_url or GITLAB_URL,
-        private_token=token,
-        ssl_verify=not insecure
-    )
+def get_repos(path, token, insecure=False, base_url=None, archived=None,
+              is_fork=None):
+    api = GitLab(
+        url=base_url,
+        token=token)
 
-    path_prefix = path.lower()
-    if path[-1] != '/':
-        path_prefix += '/'
+    projects = []
+    for project in api.projects(path, archived=archived, fork=is_fork):
+        projects.append(
+            (project['path_with_namespace'], project['ssh_url_to_repo']))
+    return sorted(projects)
 
-    for project in _get_projects(path, api):
-        project_path = project.path_with_namespace
-        # Exclude forks under different groups/users
-        cmp_path = path.lower()
-        if cmp_path[-1] != '/':
-            cmp_path += '/'
-        if cmp_path.startswith(path_prefix):
-            if project.attributes.get('forked_from_project') and not is_fork:
-                continue
-            if project.archived and not archived:
-                continue
-            yield project_path, project.ssh_url_to_repo
+
+class GitLab:
+
+    def __init__(self, token=None, url=None):
+        self.url = url if url is not None else 'https://gitlab.com'
+        self.session = requests.Session()
+        if token is not None:
+            self.session.headers['Authorization'] = f'Bearer {token}'
+
+    def groups(self):
+        qs = urllib.parse.urlencode({
+            'all_available': 'true',
+            'order_by': 'id',
+            'pagination': 'keyset',
+            'per_page': '100'
+        })
+        url = f'{self.url}/api/v4/groups?{qs}'
+
+        groups = set()
+        while url:
+            response = self.session.get(url)
+            response.raise_for_status()
+
+            for item in response.json():
+                groups.add(item['full_path'])
+
+            if next_link := response.links.get('next'):
+                url = next_link['url']
+            else:
+                url = None
+
+        return groups
+
+    def projects(self, *args, **kwargs):
+        try:
+            return self.project(*args, **kwargs)
+        except NotFound:
+            try:
+                return self.user_projects(*args, **kwargs)
+            except NotFound:
+                return self.group_projects(*args, **kwargs)
+
+    def project(self, name, archived=None, fork=None):
+        safename = urllib.parse.quote(name, safe='')
+        url = f'{self.url}/api/v4/projects/{safename}'
+        response = self.session.get(url)
+        if response.status_code == 404:
+            try:
+                message = response.json()['message']
+            except Exception:
+                pass
+            else:
+                if message == '404 Project Not Found':
+                    raise NotFound
+        response.raise_for_status()
+        project = response.json()
+        if fork is not None:
+            if fork != bool(project.get('forked_from_project')):
+                raise NotFound
+        if archived is not None and archived != project['archived']:
+            raise NotFound
+        path = project['path_with_namespace']
+        if path.lower() == name.lower():
+            return project
+
+    def group_projects(self, *args, **kwargs):
+        return self._projects('groups', *args, **kwargs)
+
+    def user_projects(self, *args, **kwargs):
+        return self._projects('users', *args, **kwargs)
+
+    def _projects(self, name_type, name, archived=None, fork=None):
+        name = urllib.parse.quote(name, safe='')
+
+        query = {
+            'include_subgroups': 'true',
+            'order_by': 'id',
+            'pagination': 'keyset',
+            'per_page': '100'
+        }
+        if archived is not None:
+            query['archived'] = str(archived).lower()
+
+        qs = urllib.parse.urlencode(query)
+        url = f'{self.url}/api/v4/{name_type}/{name}/projects?{qs}'
+
+        projects = {}
+        while url:
+            response = self.session.get(url)
+            if response.status_code == 404:
+                try:
+                    message = response.json()['message']
+                except Exception:
+                    pass
+                else:
+                    if message == '404 User Not Found':
+                        raise NotFound('User Not Found')
+                    if message == '404 Group Not Found':
+                        raise NotFound('Group Not Found')
+            response.raise_for_status()
+            for project in response.json():
+                if fork is not None:
+                    if fork != bool(project.get('forked_from_project')):
+                        continue
+                projects[project['path_with_namespace']] = project
+
+            if next_link := response.links.get('next'):
+                url = next_link['url']
+            else:
+                url = None
+
+        expected_prefix = f'{name.lower()}/'
+        return [
+            value
+            for key, value in projects.items()
+            if key.lower().startswith(expected_prefix)
+        ]
+
+
+class NotFound(Exception):
+    """Raised when a user or group is not found"""
