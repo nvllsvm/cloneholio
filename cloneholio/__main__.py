@@ -29,6 +29,7 @@ def download_repo(directory, path, url, last_activity_at, **kwargs):
             if local_path.stat().st_mtime != last_activity_at:
                 repo = git.Repo(local_path)
                 for remote in repo.remotes:
+                    remote.set_url(url)
                     remote.update()
                     if remote.refs:
                         remote.fetch()
