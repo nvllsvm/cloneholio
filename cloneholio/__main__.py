@@ -20,19 +20,24 @@ import cloneholio.gitlab
 LOGGER = logging.getLogger('cloneholio')
 
 
-def download_repo(directory, path, url, last_activity_at, **kwargs):
+def download_repo(directory, path, url, last_activity_at, default_branch,
+                  **kwargs):
     LOGGER.info('Processing %s', path)
     local_path = pathlib.Path(directory, path)
     last_activity_at = arrow.get(last_activity_at).timestamp()
     try:
         if local_path.exists():
-            if local_path.stat().st_mtime != last_activity_at:
-                repo = git.Repo(local_path)
+            repo = git.Repo(local_path)
+            local_branch = str(repo.active_branch)
+            if local_path.stat().st_mtime != last_activity_at \
+                    or local_branch != default_branch:
                 for remote in repo.remotes:
                     remote.set_url(url)
                     remote.update()
                     if remote.refs:
                         remote.fetch()
+                if local_branch != default_branch:
+                    repo.git.checkout(default_branch)
                 if repo.branches:
                     repo.remote().pull()
         else:
@@ -203,7 +208,7 @@ Token creation:
 
     exclude = set(args.exclude)
     targets = set()
-    for path, url, last_activity_at in repos:
+    for path, url, last_activity_at, default_branch in repos:
         split_path = path.split('/')
         parts = {
             '/'.join(split_path[0:i])
@@ -212,7 +217,7 @@ Token creation:
         if not exclude.intersection(parts):
             if args.list:
                 print(path)
-            targets.add((path, url, last_activity_at))
+            targets.add((path, url, last_activity_at, default_branch))
 
     if args.list:
         parser.exit()

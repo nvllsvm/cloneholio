@@ -24,7 +24,8 @@ def get_repos(path, token, insecure=False, base_url=None, archived=None,
         projects.append(
             (project['path_with_namespace'],
              project['ssh_url_to_repo'],
-             project['last_activity_at']))
+             project['last_activity_at'],
+             project['default_branch']))
     return sorted(projects)
 
 
