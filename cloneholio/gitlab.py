@@ -1,5 +1,6 @@
 import urllib.parse
 
+import arrow
 import requests
 
 
@@ -21,10 +22,13 @@ def get_repos(path, token, insecure=False, base_url=None, archived=None,
 
     projects = []
     for project in api.projects(path, archived=archived, fork=is_fork):
+        last_activity_at = project['last_activity_at']
+        if last_activity_at is not None:
+            last_activity_at = arrow.get(last_activity_at).datetime
         projects.append(
             (project['path_with_namespace'],
              project['ssh_url_to_repo'],
-             project['last_activity_at'],
+             last_activity_at,
              project['default_branch']))
     return sorted(projects)
 

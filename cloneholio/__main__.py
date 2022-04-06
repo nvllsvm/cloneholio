@@ -8,7 +8,6 @@ import shutil
 import sys
 import urllib3
 
-import arrow
 import git
 import pkg_resources
 import tqdm
@@ -24,12 +23,12 @@ def download_repo(directory, path, url, last_activity_at, default_branch,
                   **kwargs):
     LOGGER.info('Processing %s', path)
     local_path = pathlib.Path(directory, path)
-    last_activity_at = arrow.get(last_activity_at).timestamp()
+    updated_at = last_activity_at.timestamp() if last_activity_at else None
     try:
         if local_path.exists():
             repo = git.Repo(local_path)
             local_branch = str(repo.active_branch)
-            if local_path.stat().st_mtime != last_activity_at \
+            if not updated_at or local_path.stat().st_mtime != updated_at \
                     or local_branch != default_branch:
                 for remote in repo.remotes:
                     remote.set_url(url)
@@ -42,8 +41,9 @@ def download_repo(directory, path, url, last_activity_at, default_branch,
                     repo.remote().pull()
         else:
             git.Repo.clone_from(url, local_path, **kwargs)
-        os.utime(local_path,
-                 times=(local_path.stat().st_atime, last_activity_at))
+        if updated_at:
+            os.utime(local_path,
+                     times=(local_path.stat().st_atime, updated_at))
     except git.GitCommandError as e:
         return False
         LOGGER.error('Git error %s "%s"', path, ' '.join(e.command))
