@@ -46,11 +46,11 @@ def download_repo(directory, path, url, last_activity_at, default_branch,
                      times=(local_path.stat().st_atime, updated_at))
     except git.GitCommandError as e:
         LOGGER.error('Git error %s "%s"', path, ' '.join(e.command))
-        return False
+        return local_path, False
     except Exception as e:
         LOGGER.error('Unhandled error %s "%s"', path, ' '.join(e.command))
-        return False
-    return local_path
+        return local_path, False
+    return local_path, True
 
 
 def find_orphans(root, repos):
@@ -246,10 +246,9 @@ Token creation:
             )
 
         for future in iterable:
-            result = future.result()
-            if result:
-                local_paths.append(result)
-            else:
+            local_path, is_success = future.result()
+            local_paths.append(local_path)
+            if not is_success:
                 failures += 1
 
     orphans = find_orphans(directory, local_paths)
