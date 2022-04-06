@@ -34,9 +34,9 @@ def get_repos(path, token, insecure=False, base_url=None, archived=True,
         repos = api.get_user(path).get_repos()
 
     for repo in repos:
-        if repo.fork and not is_fork:
+        if repo.fork and is_fork is False:
             continue
-        if repo.archived and not archived:
+        if repo.archived and archived is False:
             continue
         yield repo.full_name, repo.ssh_url, repo.pushed_at, repo.default_branch
 
