@@ -267,6 +267,8 @@ Token creation:
     LOGGER.info(
         'Finished "%s" processing %d repos with %d failures and %d orphans',
         args.provider, total_repos, failures, len(orphans))
+    if failures:
+        sys.exit(1)
 
 
 if __name__ == '__main__':
