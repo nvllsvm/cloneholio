@@ -45,8 +45,8 @@ def download_repo(directory, path, url, last_activity_at, default_branch,
             os.utime(local_path,
                      times=(local_path.stat().st_atime, updated_at))
     except git.GitCommandError as e:
-        return False
         LOGGER.error('Git error %s "%s"', path, ' '.join(e.command))
+        return False
     except Exception as e:
         LOGGER.error('Unhandled error %s "%s"', path, ' '.join(e.command))
         return False
