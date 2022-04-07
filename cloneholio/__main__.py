@@ -35,9 +35,9 @@ def download_repo(directory, path, url, last_activity_at, default_branch,
                     remote.update()
                     if remote.refs:
                         remote.fetch()
-                if local_branch != default_branch:
-                    repo.git.checkout(default_branch)
                 if repo.branches:
+                    if local_branch != default_branch:
+                        repo.git.checkout(default_branch)
                     repo.remote().pull()
         else:
             git.Repo.clone_from(url, local_path, **kwargs)
