@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.13.0 (2022-04-09)
+- Change to default branch when local mismatches remote
+- Exit non-zero when failure(s)
+- Fix errors being reported as orphans
+- Fix for repos that have no branches
+- Fix forks and archived missing from github
+- Fix missing log message upon error
+- Fix when most recent update time is null
+- Prevent unhandled exceptions from breaking run
+- Update remote url
+
 ## 0.12.0 (2021-07-15)
 - Increase performance by only executing git when the remote reports a change. 
   The local repo's **mtime** is set to the time of the remote's last update.
