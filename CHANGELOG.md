@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.13.1 (2023-03-23)
+- Fix when GitHub user is not found
+
 ## 0.13.0 (2022-04-09)
 - Change to default branch when local mismatches remote
 - Exit non-zero when failure(s)
