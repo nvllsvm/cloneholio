@@ -31,7 +31,10 @@ def get_repos(path, token, insecure=False, base_url=None, archived=True,
         except github.UnknownObjectException:
             LOGGER.warning('GitHub repo not found: %s', path)
     else:
-        repos = api.get_user(path).get_repos()
+        try:
+            repos = api.get_user(path).get_repos()
+        except github.UnknownObjectException:
+            LOGGER.warning('GitHub user not found: %s', path)
 
     for repo in repos:
         if repo.fork and is_fork is False:
