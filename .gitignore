@@ -1,4 +1,5 @@
 *.pyc
+.pdm-python
 /*.egg-info
 /.coverage
 /.eggs
