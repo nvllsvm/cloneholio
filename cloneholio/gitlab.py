@@ -67,7 +67,7 @@ class GitLab:
 
     def projects(self, *args, **kwargs):
         try:
-            return self.project(*args, **kwargs)
+            return [self.project(*args, **kwargs)]
         except NotFound:
             try:
                 return self.user_projects(*args, **kwargs)
