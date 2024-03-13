@@ -1,3 +1,4 @@
+import functools
 import logging
 import urllib.parse
 
@@ -5,6 +6,12 @@ import github
 
 
 LOGGER = logging.getLogger('cloneholio')
+
+
+@functools.cache
+def get_auth_user_private_repos(api):
+    user = api.get_user()
+    return list(user.get_repos(visibility='private'))
 
 
 def get_repos(path, token, insecure=False, base_url=None, archived=True,
@@ -22,21 +29,36 @@ def get_repos(path, token, insecure=False, base_url=None, archived=True,
                 api._Github__requester, github.Requester.Requester
             )
 
+    path_parts = path.split('/')
+    path_user = path_parts.pop(0).lower()
+    path_name = path_parts.pop(0).lower() if path_parts else None
+    if path_parts:
+        raise ValueError('Invalid path')
+
     repos = []
-    if '/' in path:
+    if path_name:
         try:
-            repo = api.get_repo(path)
+            repo = api.get_repo(f'{path_user}/{path_name}')
             if repo:
                 repos.append(repo)
         except github.UnknownObjectException:
             LOGGER.warning('GitHub repo not found: %s', path)
     else:
         try:
-            repos = api.get_user(path).get_repos()
+            repos.extend(api.get_user(path_user).get_repos())
         except github.UnknownObjectException:
             LOGGER.warning('GitHub user not found: %s', path)
 
+    # only way to retrieve private repos
+    repos.extend(get_auth_user_private_repos(api))
+
     for repo in repos:
+        user, name = repo.full_name.split('/')
+        if user.lower() != path_user:
+            continue
+        if path_name and name.lower() != path_name:
+            continue
+
         if repo.fork and is_fork is False:
             continue
         if repo.archived and archived is False:
