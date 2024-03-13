@@ -10,6 +10,12 @@ LOGGER = logging.getLogger('cloneholio')
 
 @functools.cache
 def get_auth_user_private_repos(api):
+    """
+    The only way to retrieve private repositories is to list
+    them from the authenticated user endpoint.
+    They are _never_ returned in the non-authenticated user
+    endpoints
+    """
     user = api.get_user()
     return list(user.get_repos(visibility='private'))
 
@@ -49,7 +55,6 @@ def get_repos(path, token, insecure=False, base_url=None, archived=True,
         except github.UnknownObjectException:
             LOGGER.warning('GitHub user not found: %s', path)
 
-    # only way to retrieve private repos
     repos.extend(get_auth_user_private_repos(api))
 
     for repo in repos:
