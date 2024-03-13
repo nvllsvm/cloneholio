@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.13.4 (2024-03-12)
+- Fix private GitHub repo retrieval
+
+## 0.13.3 (2024-03-12)
+- Fix Python package
+
+## 0.13.2 (2024-03-12)
+- Fix specific GitLab project retrieval
+
 ## 0.13.1 (2023-03-23)
 - Fix when GitHub user is not found
 
