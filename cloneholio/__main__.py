@@ -1,5 +1,6 @@
 import argparse
 import concurrent.futures
+import importlib.metadata
 import itertools
 import logging
 import os
@@ -9,14 +10,17 @@ import sys
 import urllib3
 
 import git
-import pkg_resources
 import tqdm
 
 import cloneholio.github
 import cloneholio.gitlab
 
-
 LOGGER = logging.getLogger('cloneholio')
+
+try:
+    VERSION = importlib.metadata.version('cloneholio')
+except importlib.metadata.PackageNotFoundError:
+    VERSION = 'unknown'
 
 
 def download_repo(directory, path, url, last_activity_at, default_branch,
@@ -169,7 +173,7 @@ Token creation:
     parser.add_argument(
         '--version',
         action='version',
-        version=pkg_resources.get_distribution('cloneholio').version
+        version=VERSION
     )
     parser.add_argument('--all-groups', action='store_true')
     parser.add_argument('paths', nargs='*')
