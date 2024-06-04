@@ -1,8 +1,7 @@
 cloneholio
 ==========
-*I am cloneholio! I need backup of my repos.*
+|PyPI Version| |AUR Version|
 
-|Version|
 
 Maintain local backups of *all Git repositories* belonging to a user or group.
 
@@ -17,9 +16,8 @@ Maintain local backups of *all Git repositories* belonging to a user or group.
 Installation
 ------------
 
-.. code::
-
-    $ pip3 install cloneholio
+* `Arch Linux`_
+* `PyPI`_
 
 
 Example
@@ -75,8 +73,9 @@ Help
       --version             show program's version number and exit
 
 
-.. |Version| image:: https://img.shields.io/pypi/v/cloneholio.svg?
-   :target: https://pypi.org/project/cloneholio/
-
-.. _python: https://github.com/python
-
+.. |PyPI Version| image:: https://img.shields.io/pypi/v/cloneholio.svg?
+   :target: https://pypi.org/pypi/cloneholio
+.. |AUR Version| image:: https://img.shields.io/aur/version/cloneholio.svg?
+   :target: https://aur.archlinux.org/packages/cloneholio
+.. _PyPI: https://pypi.org/pypi/cloneholio
+.. _Arch Linux: https://aur.archlinux.org/packages/cloneholio/
